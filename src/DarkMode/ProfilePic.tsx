@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Dimensions, Image, StyleSheet } from "react-native";
+import { Image, StyleSheet, Dimensions } from "react-native";
 import { StyleGuide } from "../components";
 
 // eslint-disable-next-line @typescript-eslint/no-var-requires

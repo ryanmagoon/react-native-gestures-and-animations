@@ -1,5 +1,5 @@
-import React, { useRef, useState } from "react";
-import { StyleSheet, View } from "react-native";
+import React, { useState, useRef } from "react";
+import { StyleSheet, View, SafeAreaView } from "react-native";
 
 import {
   Transition,
@@ -15,20 +15,10 @@ import Followers from "./Followers";
 
 export { profilePic } from "./ProfilePic";
 
-const transition = (
-  <Transition.Together>
-    <Transition.In type="fade" durationMs={400} />
-    <Transition.Out type="fade" durationMs={500} />
-  </Transition.Together>
-);
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "space-between"
-  },
-  darkMask: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "black"
   },
   text: {
     textAlign: "center"
@@ -36,35 +26,24 @@ const styles = StyleSheet.create({
 });
 
 export default () => {
-  const [dark, setDark] = useState(false);
-  const ref = useRef<TransitioningView>(null);
   return (
-    <Transitioning.View style={styles.container} {...{ ref, transition }}>
-      {dark && <View style={styles.darkMask} />}
-      <Switch
-        value={dark}
-        onValueChange={value => {
-          if (ref.current) {
-            ref.current.animateNextTransition();
-          }
-          setDark(value);
-        }}
-      />
+    <View style={styles.container}>
+      <SafeAreaView />
       <ProfilePic />
       <View>
-        <Text type="title3" style={styles.text} {...{ dark }}>
+        <Text type="title3" style={styles.text}>
           Krzysztof Magiera
         </Text>
-        <Text type="headline" style={styles.text} {...{ dark }}>
+        <Text type="headline" style={styles.text}>
           Kraków, Poland
         </Text>
       </View>
-      <Followers followers={3569} following={310} {...{ dark }} />
+      <Followers followers={3569} following={310} />
       <SocialMediaIcons />
-      <Text type="body" style={styles.text} {...{ dark }}>
+      <Text type="body" style={styles.text}>
         When speaking of animations, the key to success is to avoid frame drops
       </Text>
-      <Button label="Follow" primary onPress={() => true} />
-    </Transitioning.View>
+      <Button label="Follow" primary onPress={() => {}} />
+    </View>
   );
 };
