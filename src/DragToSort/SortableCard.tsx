@@ -8,7 +8,6 @@ import Card, {
   CardProps,
   CARD_HEIGHT as INNER_CARD_HEIGHT
 } from "../components/Card";
-import { withOffset, withTransition } from "../components";
 
 export const CARD_HEIGHT = INNER_CARD_HEIGHT + 32;
 const { width } = Dimensions.get("window");
@@ -18,7 +17,8 @@ const {
   cond,
   useCode,
   divide,
-  round,
+  floor,
+  max,
   multiply,
   block,
   set,
@@ -27,23 +27,8 @@ const {
   add,
   greaterThan,
   abs,
-  not,
-  and,
-  neq
+  not
 } = Animated;
-
-const isMoving = (position: Animated.Node<number>) => {
-  const delta = diff(position);
-  const noMovementFrames = new Value(0);
-  return cond(
-    lessThan(abs(delta), 1e-3),
-    [
-      set(noMovementFrames, add(noMovementFrames, 1)),
-      not(greaterThan(noMovementFrames, 20))
-    ],
-    [set(noMovementFrames, 0), 1]
-  );
-};
 
 interface SortableCardProps extends CardProps {
   offsets: Animated.Value<number>[];
@@ -51,55 +36,8 @@ interface SortableCardProps extends CardProps {
 }
 
 export default ({ card, index, offsets }: SortableCardProps) => {
-  const {
-    gestureHandler,
-    translationX,
-    translationY,
-    velocityY,
-    velocityX,
-    state
-  } = panGestureHandler();
-  const x = withOffset({
-    offset: 0,
-    value: translationX,
-    state
-  });
-  const translateX = withTransition(x, velocityX, state);
-  const y = withOffset({
-    offset: offsets[index],
-    value: translationY,
-    state
-  });
-  const translateY = withTransition(y, velocityY, state);
-  const zIndex = cond(
-    eq(state, State.ACTIVE),
-    200,
-    cond(isMoving(translateY), 100, 1)
-  );
-  const currentIndex = round(divide(y, CARD_HEIGHT));
-  const currentOffset = multiply(currentIndex, CARD_HEIGHT);
-  useCode(
-    () =>
-      block([
-        ...offsets.map(offset =>
-          cond(
-            and(
-              eq(currentOffset, offset),
-              neq(currentOffset, offsets[index]),
-              eq(state, State.ACTIVE)
-            ),
-            [
-              set(offset, offsets[index]),
-              set(offsets[index], currentOffset)
-              // call([currentOffset], c => console.log(`set new order: ${c}`))
-            ]
-          )
-        )
-      ]),
-    []
-  );
   return (
-    <PanGestureHandler {...gestureHandler}>
+    <PanGestureHandler>
       <Animated.View
         style={{
           position: "absolute",
@@ -108,14 +46,7 @@ export default ({ card, index, offsets }: SortableCardProps) => {
           width,
           height: CARD_HEIGHT,
           justifyContent: "center",
-          alignItems: "center",
-          zIndex,
-          transform: [
-            { translateX },
-            {
-              translateY
-            }
-          ]
+          alignItems: "center"
         }}
       >
         <Card {...{ card }} />
