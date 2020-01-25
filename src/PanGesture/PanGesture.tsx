@@ -5,7 +5,7 @@ import Animated from 'react-native-reanimated'
 import Constants from 'expo-constants'
 
 // import { onGestureEvent } from 'react-native-redash'
-import { onGestureEvent } from 'react-native-redash'
+import { clamp, onGestureEvent } from 'react-native-redash'
 import { Card, StyleGuide, cards } from '../components'
 import { CARD_HEIGHT, CARD_WIDTH } from '../components/Card'
 
@@ -21,6 +21,19 @@ const styles = StyleSheet.create({
 })
 const [card] = cards
 
+const withOffset = (
+  value: Animated.Value<number>,
+  state: Animated.Value<State>
+) => {
+  const offset = new Value(0)
+
+  return cond(
+    eq(state, State.END),
+    [set(offset, add(value, offset)), offset],
+    add(offset, value)
+  )
+}
+
 export default () => {
   const state = new Value(State.UNDETERMINED)
   const translationX = new Value(0)
@@ -30,8 +43,16 @@ export default () => {
     translationX,
     translationY
   })
-  const translateX = translationX
-  const translateY = translationY
+  const translateX = clamp(
+    withOffset(translationX, state),
+    0,
+    containerWidth - CARD_WIDTH
+  )
+  const translateY = clamp(
+    withOffset(translationY, state),
+    0,
+    containerHeight - CARD_HEIGHT
+  )
 
   return (
     <View style={styles.container}>
