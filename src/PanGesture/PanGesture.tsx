@@ -23,33 +23,33 @@ const [card] = cards
 
 const withOffset = (
   value: Animated.Value<number>,
-  state: Animated.Value<State>
-) => {
-  const offset = new Value(0)
-
-  return cond(
+  state: Animated.Value<State>,
+  offset: Animated.Value<number>
+) =>
+  cond(
     eq(state, State.END),
     [set(offset, add(value, offset)), offset],
     add(offset, value)
   )
-}
 
 export default () => {
   const state = new Value(State.UNDETERMINED)
   const translationX = new Value(0)
   const translationY = new Value(0)
+  const offsetX = new Value((containerWidth - CARD_WIDTH) / 2)
+  const offsetY = new Value((containerHeight - CARD_HEIGHT) / 2)
   const gestureHandler = onGestureEvent({
     state,
     translationX,
     translationY
   })
-  const translateX = clamp(
-    withOffset(translationX, state),
+  const translateX = diffClamp(
+    withOffset(translationX, state, offsetX),
     0,
     containerWidth - CARD_WIDTH
   )
-  const translateY = clamp(
-    withOffset(translationY, state),
+  const translateY = diffClamp(
+    withOffset(translationY, state, offsetY),
     0,
     containerHeight - CARD_HEIGHT
   )
