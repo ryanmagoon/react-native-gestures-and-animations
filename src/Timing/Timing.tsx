@@ -19,7 +19,8 @@ const {
   clockRunning,
   and,
   not,
-  timing
+  timing,
+  eq
 } = Animated
 
 const styles = StyleSheet.create({
@@ -43,21 +44,46 @@ const runTiming = (clock: Animated.Clock) => {
     easing: Easing.linear
   }
   return block([
-    cond(not(clockRunning(clock)), startClock(clock)),
+    // cond(not(clockRunning(clock)), startClock(clock)),
     timing(clock, state, config),
+    cond(eq(state.finished, 1), [
+      set(state.finished, 0),
+      set(state.frameTime, 0),
+      set(state.time, 0),
+      set(config.toValue, cond(eq(state.position, 1), 0, 1))
+    ]),
     state.position
   ])
 }
 
 export default () => {
-  const progress = new Value(0)
-  const clock = new Clock()
-
-  useCode(block([set(progress, runTiming(clock))]), [])
+  const [playing, setPlaying] = useState(false)
+  const { isPlaying, progress, clock } = useMemoOne(
+    () => ({
+      progress: new Value(0),
+      clock: new Clock(),
+      isPlaying: new Value(0)
+    }),
+    []
+  )
+  isPlaying.setValue(playing ? 1 : 0)
+  useCode(
+    block([
+      cond(and(eq(isPlaying, 0), clockRunning(clock)), stopClock(clock)),
+      cond(and(eq(isPlaying, 1), not(clockRunning(clock))), startClock(clock)),
+      set(progress, runTiming(clock))
+    ]),
+    []
+  )
 
   return (
     <View style={styles.container}>
-      <SimpleActivityIndicator {...{ progress }} />
+      <SimpleActivityIndicator {...{ progress, isPlaying }} />
+      <Button
+        primary
+        label={playing ? 'Pause' : 'Start'}
+        onPress={() => setPlaying(!playing)}
+      />
     </View>
   )
 }
